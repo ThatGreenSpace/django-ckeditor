@@ -405,6 +405,8 @@
 					}
 				}
 
+				this.element.addClass('img-responsive');
+
 				// Update data.link object with attributes if the link has been discovered.
 				if ( editor.plugins.link && this.parts.link ) {
 					data.link = CKEDITOR.plugins.link.parseLinkAttributes( editor, this.parts.link );
