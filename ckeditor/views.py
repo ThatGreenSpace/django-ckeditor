@@ -29,9 +29,6 @@ def get_upload_filename(upload_name, user, upload_directory=''):
         # settings.CKEDITOR_UPLOAD_PATH, user_path, date_path)
         settings.CKEDITOR_UPLOAD_PATH, user_path, upload_directory)
 
-    print 'upload_directory', upload_directory
-    print 'upload_path', upload_path
-
     if getattr(settings, "CKEDITOR_UPLOAD_SLUGIFY_FILENAME", True):
         upload_name = utils.slugify_filename(upload_name)
 
@@ -55,11 +52,9 @@ class ImageUploadView(generic.View):
         except utils.NotAnImageException:
             pass
 
-        print 'upload', request.POST.get('upload_directory', None)
-
         # Open output file in which to store upload.
-        if request.POST.get('upload_directory', None):
-            upload_filename = get_upload_filename(upload.name, request.user, request.POST.get('upload_directory'))
+        if request.GET.get('upload_directory', None):
+            upload_filename = get_upload_filename(upload.name, request.user, request.GET.get('upload_directory'))
         else:
             upload_filename = get_upload_filename(upload.name, request.user)
         saved_path = default_storage.save(upload_filename, upload)
@@ -87,8 +82,6 @@ def get_image_files(user=None, path=''):
     # limit images to user specific path, but not for superusers.
     STORAGE_DIRECTORIES = 0
     STORAGE_FILES = 1
-
-    print 'path', path
 
     restrict = getattr(settings, 'CKEDITOR_RESTRICT_BY_USER', False)
     if user and not user.is_superuser and restrict:
@@ -125,7 +118,6 @@ def get_files_browse_urls(user=None, browse_directory=None):
     thumbnail and full image URL's for each file found.
     """
     files = []
-    print 'get_files_browse_urls', browse_directory
     if browse_directory and browse_directory != '':
         image_files = get_image_files(user=user, path=browse_directory)
     else:
@@ -160,7 +152,6 @@ def is_image(path):
 
 
 def browse(request):
-    print 'browse', request.GET.get('browse_directory', None)
     context = RequestContext(request, {
         'files': get_files_browse_urls(request.user, request.GET.get('browse_directory', None)),
     })
