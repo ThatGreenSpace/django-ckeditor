@@ -24,7 +24,7 @@ class RichTextField(models.TextField):
 
 class RichTextFormField(forms.fields.CharField):
     def __init__(self, config_name='default', extra_plugins=None, external_plugin_resources=None, *args, **kwargs):
-        kwargs.update({'widget': CKEditorWidget(config_name=config_name, extra_plugins=extra_plugins, external_plugin_resources=external_plugin_resources)})
+        # kwargs.update({'widget': CKEditorWidget(config_name=config_name, extra_plugins=extra_plugins, external_plugin_resources=external_plugin_resources)})
         super(RichTextFormField, self).__init__(*args, **kwargs)
 
 try:

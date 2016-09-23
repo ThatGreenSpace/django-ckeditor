@@ -21,13 +21,13 @@ def get_upload_filename(upload_name, user, upload_directory=''):
     else:
         user_path = ''
 
-    # Generate date based path to put uploaded file.
-    # date_path = datetime.now().strftime('%Y/%m/%d')
-
     # Complete upload path (upload_path + date_path).
-    upload_path = os.path.join(
-        # settings.CKEDITOR_UPLOAD_PATH, user_path, date_path)
-        settings.CKEDITOR_UPLOAD_PATH, user_path, upload_directory)
+    if upload_directory != '':
+        upload_path = os.path.join(upload_directory)
+    else:
+        # Generate date based path to put uploaded file.
+        date_path = datetime.now().strftime('%Y/%m/%d')
+        upload_path = os.path.join(settings.CKEDITOR_UPLOAD_PATH, user_path, date_path)
 
     if getattr(settings, "CKEDITOR_UPLOAD_SLUGIFY_FILENAME", True):
         upload_name = utils.slugify_filename(upload_name)
@@ -83,13 +83,15 @@ def get_image_files(user=None, path=''):
     STORAGE_DIRECTORIES = 0
     STORAGE_FILES = 1
 
-    restrict = getattr(settings, 'CKEDITOR_RESTRICT_BY_USER', False)
-    if user and not user.is_superuser and restrict:
-        user_path = user.username
+    if path != '':
+        browse_path = os.path.join(path)
     else:
-        user_path = ''
-
-    browse_path = os.path.join(settings.CKEDITOR_UPLOAD_PATH, user_path, path)
+        restrict = getattr(settings, 'CKEDITOR_RESTRICT_BY_USER', False)
+        if user and not user.is_superuser and restrict:
+            user_path = user.username
+        else:
+            user_path = ''
+        browse_path = os.path.join(settings.CKEDITOR_UPLOAD_PATH, user_path, path)
 
     try:
         storage_list = default_storage.listdir(browse_path)
