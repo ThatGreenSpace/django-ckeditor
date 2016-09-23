@@ -153,6 +153,6 @@ def is_image(path):
 
 def browse(request):
     context = RequestContext(request, {
-        'files': get_files_browse_urls(request.user, request.GET.get('browse_url', None)),
+        'files': get_files_browse_urls(request.user, request.GET.get('browse_directory', None)),
     })
     return render_to_response('browse.html', context)
