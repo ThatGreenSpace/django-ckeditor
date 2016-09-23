@@ -69,7 +69,8 @@ class CKEditorWidget(forms.Textarea):
                     uploaded media). Make sure to use a trailing slash: \
                     CKEDITOR_MEDIA_PREFIX = '/media/ckeditor/'")
 
-    def __init__(self, config_name='default', extra_plugins=None, external_plugin_resources=None, *args, **kwargs):
+    def __init__(self, config_name='default', extra_plugins=None, external_plugin_resources=None,
+                 upload_directory=None, browse_directory=None, *args, **kwargs):
         super(CKEditorWidget, self).__init__(*args, **kwargs)
         # Setup config from defaults.
         self.config = DEFAULT_CONFIG.copy()
@@ -102,15 +103,19 @@ class CKEditorWidget(forms.Textarea):
             self.config['extraPlugins'] = ','.join(extra_plugins)
 
         self.external_plugin_resources = external_plugin_resources or []
+        self.upload_directory = upload_directory
+        self.browse_directory = browse_directory
 
     def render(self, name, value, attrs=None):
         if value is None:
             value = ''
         final_attrs = self.build_attrs(attrs, name=name)
         if 'filebrowserUploadUrl' not in self.config:
-            self.config.setdefault('filebrowserUploadUrl', reverse('ckeditor_upload'))
+            self.config.setdefault('filebrowserUploadUrl', reverse('ckeditor_upload') +
+                                   '?upload_directory=' + self.upload_directory)
         if 'filebrowserBrowseUrl' not in self.config:
-            self.config.setdefault('filebrowserBrowseUrl', reverse('ckeditor_browse'))
+            self.config.setdefault('filebrowserBrowseUrl', reverse('ckeditor_browse') +
+                                   '?browse_directory=' + self.browse_directory)
         if not self.config.get('language'):
             self.config['language'] = get_language()
 

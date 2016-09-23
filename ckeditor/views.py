@@ -14,7 +14,7 @@ from ckeditor import image_processing
 from ckeditor import utils
 
 
-def get_upload_filename(upload_name, user):
+def get_upload_filename(upload_name, user, upload_directory=''):
     # If CKEDITOR_RESTRICT_BY_USER is True upload file to user specific path.
     if getattr(settings, 'CKEDITOR_RESTRICT_BY_USER', False):
         user_path = user.username
@@ -22,11 +22,12 @@ def get_upload_filename(upload_name, user):
         user_path = ''
 
     # Generate date based path to put uploaded file.
-    date_path = datetime.now().strftime('%Y/%m/%d')
+    # date_path = datetime.now().strftime('%Y/%m/%d')
 
     # Complete upload path (upload_path + date_path).
     upload_path = os.path.join(
-        settings.CKEDITOR_UPLOAD_PATH, user_path, date_path)
+        # settings.CKEDITOR_UPLOAD_PATH, user_path, date_path)
+        settings.CKEDITOR_UPLOAD_PATH, user_path, upload_directory)
 
     if getattr(settings, "CKEDITOR_UPLOAD_SLUGIFY_FILENAME", True):
         upload_name = utils.slugify_filename(upload_name)
@@ -52,7 +53,10 @@ class ImageUploadView(generic.View):
             pass
 
         # Open output file in which to store upload.
-        upload_filename = get_upload_filename(upload.name, request.user)
+        if request.POST.get('upload_directory', None):
+            upload_filename = get_upload_filename(upload.name, request.user, request.POST.get('upload_directory'))
+        else:
+            upload_filename = get_upload_filename(upload.name, request.user)
         saved_path = default_storage.save(upload_filename, upload)
 
         if backend.should_create_thumbnail(saved_path):
@@ -108,13 +112,18 @@ def get_image_files(user=None, path=''):
             yield element
 
 
-def get_files_browse_urls(user=None):
+def get_files_browse_urls(user=None, browse_directory=None):
     """
     Recursively walks all dirs under upload dir and generates a list of
     thumbnail and full image URL's for each file found.
     """
     files = []
-    for filename in get_image_files(user=user):
+    if browse_directory and browse_directory != '':
+        image_files = get_image_files(user=user, path=browse_directory)
+    else:
+        image_files = get_image_files(user=user)
+
+    for filename in image_files:
         src = utils.get_media_url(filename)
         visible_filename = None
         if getattr(settings, 'CKEDITOR_IMAGE_BACKEND', None):
@@ -144,6 +153,6 @@ def is_image(path):
 
 def browse(request):
     context = RequestContext(request, {
-        'files': get_files_browse_urls(request.user),
+        'files': get_files_browse_urls(request.user, request.GET.get('browse_url', None)),
     })
     return render_to_response('browse.html', context)
