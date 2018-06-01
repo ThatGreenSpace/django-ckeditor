@@ -1,3 +1,4 @@
+import django
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -109,7 +110,10 @@ class CKEditorWidget(forms.Textarea):
     def render(self, name, value, attrs=None):
         if value is None:
             value = ''
-        final_attrs = self.build_attrs(attrs, name=name)
+        if django.VERSION < (1, 11):
+            final_attrs = self.build_attrs(attrs, name=name)
+        else:
+            final_attrs = self.build_attrs(attrs, extra_attrs={'name': name})
         if 'filebrowserUploadUrl' not in self.config:
             self.config.setdefault('filebrowserUploadUrl', reverse('ckeditor_upload') +
                                    '?upload_directory=' + (self.upload_directory if self.upload_directory else ''))
